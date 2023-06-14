@@ -1,0 +1,61 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128 // OLED display width,  in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+int moistPin = 0;
+int moistVal = 0;
+int touch = 10;  // pin for touch sensor
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(touch, INPUT);
+
+  // initialize OLED display with address 0x3C for 128x64
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    while (true);
+  }
+
+  delay(2000);         // wait for initializing
+  oled.clearDisplay(); // clear display
+
+  oled.setTextSize(1);          // text size
+  oled.setTextColor(WHITE);     // text color
+  oled.setCursor(0, 10);        // position to display
+  oled.println("Hello World!"); // text to display
+  oled.display();               // show on OLED
+}
+
+
+void loop()
+{
+  int touchValue = digitalRead(touch);
+  if (touchValue == HIGH){
+    Serial.println("Starting moisture reading");
+    moistVal = analogRead(moistPin);
+    Serial.println(moistVal);
+    int percent = 2.718282 * 2.718282 * (.008985 * moistVal + 0.207762); //calculate percent for probes about 1 - 1.5 inches apart
+    Serial.print(percent);
+    Serial.println("% Moisture ");
+    oled.clearDisplay(); // clear display
+    oled.setTextSize(1);          // text size
+    oled.setTextColor(WHITE);     // text color
+    oled.setCursor(0, 10);        // position to display
+    oled.println(percent); // text to display
+    oled.display();               // show on OLED
+    if(percent<50)
+    {digitalWrite(13,HIGH);}// if the sensor value is below 50% led on your nano will glow else it is off
+  
+  else
+  {digitalWrite(13,LOW);} 
+
+  delay(2000); // for stability 
+  }
+  else{
+    Serial.println("Nothing happening right now");
+  }
+  delay(500);
+}
